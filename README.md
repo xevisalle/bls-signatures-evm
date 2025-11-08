@@ -44,3 +44,11 @@ assert!(verify_aggregated_diff_msg(
     aggr_sig_diff
 ));
 ```
+
+## Benchmarks
+
+To benchmark the library, simply run:
+
+```
+cargo bench
+```
