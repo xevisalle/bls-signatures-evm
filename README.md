@@ -7,16 +7,40 @@ This repository includes the implementation of BLS signatures in Rust, using the
 ## Example
 
 ```rust
-    use bls_signatures_evm::*;
-    use rand::rngs::OsRng;
+use bls_signatures_evm::*;
+use rand::rngs::OsRng;
     
-    // Generate the secret and public keys
-    let (sk, pk) = generate_keypair(&mut OsRng);
+// Generate the secret and public keys
+let (sk, pk) = generate_keypair(&mut OsRng);
 
-    // Sign a message with a secret key
-    let msg = 1234u64.to_be_bytes();
-    let sig = sign(sk, &msg);
+// Sign a message with a secret key
+let msg = 1234u64.to_be_bytes();
+let sig = sign(sk, &msg);
 
-    // Verify a signature with a public key 
-    assert!(verify(pk, &msg, sig));
+// Verify a signature with a public key 
+assert!(verify(pk, &msg, sig));
+
+// Sign the same message with another key
+let (sk2, pk2) = generate_keypair(&mut OsRng);
+let sig2 = sign(sk2, &msg);
+
+// Aggregate both signatures
+let aggr_sig = aggregate(&[sig, sig2]);
+
+// Verify the aggregated signature using the public keys
+assert!(verify_aggregated_same_msg(&[pk, pk2], &msg, aggr_sig));
+
+// Sign a different message with the second key
+let msg_diff = 5678u64.to_be_bytes();
+let sig_diff = sign(sk2, &msg_diff);
+
+// Aggregate both signatures of different messages
+let aggr_sig_diff = aggregate(&[sig, sig_diff]);
+
+// Verify the aggregated signature using the public keys
+assert!(verify_aggregated_diff_msg(
+    &[pk, pk2],
+    &[&msg, &msg_diff],
+    aggr_sig_diff
+));
 ```
