@@ -5,7 +5,10 @@
 //!
 //! Ref: https://www.iacr.org/archive/asiacrypt2001/22480516.pdf
 
-use bls12_381::{G1Affine, G1Projective, G2Affine, Gt, Scalar, multi_miller_loop};
+#[doc = include_str!("../README.md")]
+use bls12_381::{
+    G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, Scalar, multi_miller_loop,
+};
 use ff::Field;
 use rand::RngCore;
 use sha3::{Digest, Keccak256};
@@ -54,6 +57,42 @@ pub fn verify(pk: G2Affine, message: &[u8], sig: G1Affine) -> bool {
     pairings_check == Gt::identity()
 }
 
+/// Aggregates a set of BLS signatures
+pub fn aggregate(sigs: &[G1Affine]) -> G1Affine {
+    let aggregated_sig = sigs
+        .iter()
+        .fold(G1Projective::identity(), |acc, sig| acc + sig);
+
+    G1Affine::from(aggregated_sig)
+}
+
+/// Verifies an aggregated BLS signature of a given message, given the corresponding public
+/// keys, and returns a bool.
+pub fn verify_aggregated_same_msg(pks: &[G2Affine], message: &[u8], sig: G1Affine) -> bool {
+    let aggregated_pk = pks
+        .iter()
+        .fold(G2Projective::identity(), |acc, pk| acc + pk);
+
+    verify(G2Affine::from(aggregated_pk), message, sig)
+}
+
+/// Verifies an aggregated BLS signature of different messages, given the corresponding public
+/// keys, and returns a bool.
+pub fn verify_aggregated_diff_msg(pks: &[G2Affine], messages: &[&[u8]], sig: G1Affine) -> bool {
+    let mut pairing_inputs = vec![(-sig, G2Prepared::from(G2Affine::generator()))];
+
+    for i in 0..messages.len() {
+        let hash = G1Affine::from(truncated_hash(messages[i]));
+        let pk = G2Prepared::from(pks[i]);
+        pairing_inputs.push((hash, pk));
+    }
+
+    let ref_vec: Vec<_> = pairing_inputs.iter().map(|(x, y)| (x, y)).collect();
+    let pairings_check = multi_miller_loop(&ref_vec).final_exponentiation();
+
+    pairings_check == Gt::identity()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,6 +111,39 @@ mod tests {
         let sig = sign(sk, &msg);
 
         assert!(verify(pk, &msg, sig));
+    }
+
+    #[test]
+    fn test_aggr_same_message() {
+        let (sk1, pk1) = generate_keypair(&mut OsRng);
+        let (sk2, pk2) = generate_keypair(&mut OsRng);
+
+        let msg = 1234u64.to_be_bytes();
+        let sig1 = sign(sk1, &msg);
+        let sig2 = sign(sk2, &msg);
+
+        let sig = aggregate(&[sig1, sig2]);
+
+        assert!(verify_aggregated_same_msg(&[pk1, pk2], &msg, sig));
+    }
+
+    #[test]
+    fn test_aggr_diff_message() {
+        let (sk1, pk1) = generate_keypair(&mut OsRng);
+        let (sk2, pk2) = generate_keypair(&mut OsRng);
+
+        let msg1 = 1234u64.to_be_bytes();
+        let msg2 = 5678u64.to_be_bytes();
+        let sig1 = sign(sk1, &msg1);
+        let sig2 = sign(sk2, &msg2);
+
+        let sig = aggregate(&[sig1, sig2]);
+
+        assert!(verify_aggregated_diff_msg(
+            &[pk1, pk2],
+            &[&msg1, &msg2],
+            sig
+        ));
     }
 
     #[test]

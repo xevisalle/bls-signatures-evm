@@ -13,3 +13,10 @@ bls12_381 = "0.8.0"
 sha3 = "0.10.8"
 rand = "0.8.5"
 ff = "0.13.1"
+
+[dev-dependencies]
+criterion = { version = "0.7", features = ["html_reports"] }
+
+[[bench]]
+name = "bls_signatures"
+harness = false
