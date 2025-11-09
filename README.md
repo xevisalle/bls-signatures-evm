@@ -49,6 +49,6 @@ assert!(verify_aggregated_diff_msg(
 
 To benchmark the library, simply run:
 
-```
+```shell
 cargo bench
 ```
