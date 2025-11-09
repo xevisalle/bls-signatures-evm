@@ -21,8 +21,10 @@ fn truncated_hash(message: &[u8]) -> G1Projective {
     hasher.update(message);
 
     let mut hash: [u8; 32] = hasher.finalize().into();
-    hash[31] &= 0b0011_1111;
+    hash[0] &= 0b0011_1111;
 
+    // We reverse to ensure we get the same result in Solidity
+    hash.reverse();
     G1Affine::generator() * Scalar::from_bytes(&hash).unwrap()
 }
 
