@@ -3,6 +3,8 @@ use bls12_381::{
     G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, multi_miller_loop,
 };
 
+/// The BLS signature of a specific message. It also can be the aggregation
+/// of many signatures, either of the same or different messages.
 #[derive(Clone, Copy)]
 pub struct Signature(pub(crate) G1Affine);
 
@@ -48,7 +50,7 @@ impl Signature {
         pairings_check == Gt::identity()
     }
 
-    /// Aggregates a set of BLS signatures
+    /// Aggregates a set of BLS signatures.
     pub fn aggregate(sigs: &[Signature]) -> Self {
         let aggregated_sig = sigs
             .iter()

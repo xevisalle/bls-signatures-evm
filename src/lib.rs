@@ -5,6 +5,7 @@
 //!
 //! Ref: https://www.iacr.org/archive/asiacrypt2001/22480516.pdf
 
+#![deny(missing_docs)]
 #[doc = include_str!("../README.md")]
 use bls12_381::{G1Affine, G1Projective, Scalar};
 use sha3::{Digest, Keccak256};
