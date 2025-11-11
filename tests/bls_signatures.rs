@@ -74,3 +74,16 @@ fn test_wrong_message() {
     let wrong_msg = 5678u64.to_be_bytes();
     assert!(!sig.verify(&wrong_msg, &pk));
 }
+
+#[test]
+fn test_serialization() {
+    let sk = SecretKey::random(&mut OsRng);
+    let pk = PublicKey::from(&sk);
+
+    let msg = 1234u64.to_be_bytes();
+    let sig = sk.sign(&msg);
+
+    assert_eq!(sk, SecretKey::from_bytes(&sk.to_bytes()).unwrap());
+    assert_eq!(pk, PublicKey::from_bytes(&pk.to_bytes()).unwrap());
+    assert_eq!(sig, Signature::from_bytes(&sig.to_bytes()).unwrap());
+}

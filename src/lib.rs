@@ -25,6 +25,9 @@ fn truncated_hash(message: &[u8]) -> G1Projective {
     G1Affine::generator() * Scalar::from_bytes(&hash).unwrap()
 }
 
+mod error;
+use error::Error;
+
 mod keys;
 pub use keys::{PublicKey, SecretKey};
 

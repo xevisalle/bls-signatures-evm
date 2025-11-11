@@ -1,11 +1,11 @@
-use crate::{PublicKey, truncated_hash};
+use crate::{Error, PublicKey, truncated_hash};
 use bls12_381::{
     G1Affine, G1Projective, G2Affine, G2Prepared, G2Projective, Gt, multi_miller_loop,
 };
 
 /// The BLS signature of a specific message. It also can be the aggregation
 /// of many signatures, either of the same or different messages.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Signature(pub(crate) G1Affine);
 
 impl Signature {
@@ -57,5 +57,19 @@ impl Signature {
             .fold(G1Projective::identity(), |acc, sig| acc + sig.0);
 
         Self(G1Affine::from(aggregated_sig))
+    }
+
+    /// Serializes the signature into a byte representation in compressed form
+    pub fn to_bytes(&self) -> [u8; 48] {
+        self.0.to_compressed()
+    }
+
+    /// Deserializes a byte representation in compressed form into a signature
+    pub fn from_bytes(bytes: &[u8; 48]) -> Result<Self, Error> {
+        let point = G1Affine::from_compressed(bytes);
+        match point.is_some().unwrap_u8() {
+            1 => Ok(Signature(point.unwrap())),
+            _ => Err(Error::InvalidBytes),
+        }
     }
 }
