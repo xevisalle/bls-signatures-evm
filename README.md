@@ -11,37 +11,38 @@ use bls_signatures_evm::*;
 use rand::rngs::OsRng;
     
 // Generate the secret and public keys
-let (sk, pk) = generate_keypair(&mut OsRng);
+let sk = SecretKey::random(&mut OsRng);
+let pk = PublicKey::from(&sk);
 
 // Sign a message with a secret key
 let msg = 1234u64.to_be_bytes();
-let sig = sign(sk, &msg);
+let sig = sk.sign(&msg);
 
 // Verify a signature with a public key 
-assert!(verify(pk, &msg, sig));
+assert!(sig.verify(&msg, &pk));
 
 // Sign the same message with another key
-let (sk2, pk2) = generate_keypair(&mut OsRng);
-let sig2 = sign(sk2, &msg);
+let sk2 = SecretKey::random(&mut OsRng);
+let pk2 = PublicKey::from(&sk2);
+let sig2 = sk2.sign(&msg);
 
 // Aggregate both signatures
-let aggr_sig = aggregate(&[sig, sig2]);
+let aggr_sig = Signature::aggregate(&[sig, sig2]);
 
 // Verify the aggregated signature using the public keys
-assert!(verify_aggregated_same_msg(&[pk, pk2], &msg, aggr_sig));
+assert!(aggr_sig.verify_aggregated_same_msg(&msg, &[pk, pk2]));
 
 // Sign a different message with the second key
 let msg_diff = 5678u64.to_be_bytes();
-let sig_diff = sign(sk2, &msg_diff);
+let sig_diff = sk2.sign(&msg_diff);
 
 // Aggregate both signatures of different messages
-let aggr_sig_diff = aggregate(&[sig, sig_diff]);
+let aggr_sig_diff = Signature::aggregate(&[sig, sig_diff]);
 
 // Verify the aggregated signature using the public keys
-assert!(verify_aggregated_diff_msg(
-    &[pk, pk2],
+assert!(aggr_sig_diff.verify_aggregated_diff_msg(
     &[&msg, &msg_diff],
-    aggr_sig_diff
+    &[pk, pk2]
 ));
 ```
 
