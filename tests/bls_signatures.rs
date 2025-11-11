@@ -87,3 +87,16 @@ fn test_serialization() {
     assert_eq!(pk, PublicKey::from_bytes(&pk.to_bytes()).unwrap());
     assert_eq!(sig, Signature::from_bytes(&sig.to_bytes()).unwrap());
 }
+
+#[test]
+fn test_evm_serialization() {
+    let sig_bytes = hex::decode("000000000000000000000000000000000760474b2b63d08796f528dcba365d9cc58c6dc5e4604ecca71a892a9cf323f6bf1b72da86af83e4b595cbf9e2e1b9f10000000000000000000000000000000005c80439057731aeb0d5283f29e5afd253b68a845d322ea28d1de01a4b26389eb5930ded7853c0ecd8cd6f229420b5cd").unwrap();
+
+    let pk_bytes = hex::decode("000000000000000000000000000000000ffe13c2e8ccdb19d846ed0674282d4c6d13642f4ecaefab42eecb70c17c7c95c84bb18095508ee2cf1c9b307d5d36870000000000000000000000000000000005571d872653e05eb3aa495c389ca9a114f58fa3eafdf102c764b64edae10a0983f187fc1ca8140f75c16e4ecef0bda900000000000000000000000000000000176b15b96630b2f9829d62d05e510b4d7a54eddc22c031e0b4d43380ee764a4dfea6ef326ed29b5c11b1556e58daabed00000000000000000000000000000000008ffd3017493b2189bf3493e6ed6d3a6f43c9f68a78ec65c9cea10cd6cc3d416fe802e3000129d6769dc16b21a70bed").unwrap();
+
+    let sig = Signature::from_evm_bytes(&sig_bytes.clone().try_into().unwrap()).unwrap();
+    assert_eq!(sig_bytes, sig.to_evm_bytes());
+
+    let pk = PublicKey::from_evm_bytes(&pk_bytes.clone().try_into().unwrap()).unwrap();
+    assert_eq!(pk_bytes, pk.to_evm_bytes());
+}

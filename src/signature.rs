@@ -72,4 +72,31 @@ impl Signature {
             _ => Err(Error::InvalidBytes),
         }
     }
+
+    /// Negates a signature to prepare it for pairing verification, and serializes it
+    /// into a byte representation in uncompressed form suitable for its usage with
+    /// EVM precompiles.
+    pub fn to_evm_bytes(&self) -> [u8; 128] {
+        let bytes = (-self.0).to_uncompressed();
+        let mut evm_bytes = [0u8; 128];
+        evm_bytes[16..64].copy_from_slice(&bytes[..48]);
+        evm_bytes[80..].copy_from_slice(&bytes[48..]);
+
+        evm_bytes
+    }
+
+    /// Deserializes a byte representation in EVM-style uncompressed form into a signature,
+    /// and negates it to reverse the previous negation.
+    pub fn from_evm_bytes(bytes: &[u8; 128]) -> Result<Self, Error> {
+        let mut point_bytes = [0u8; 96];
+
+        point_bytes[..48].copy_from_slice(&bytes[16..64]);
+        point_bytes[48..].copy_from_slice(&bytes[80..]);
+
+        let point = G1Affine::from_uncompressed(&point_bytes);
+        match point.is_some().unwrap_u8() {
+            1 => Ok(Signature(-point.unwrap())),
+            _ => Err(Error::InvalidBytes),
+        }
+    }
 }

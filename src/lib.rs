@@ -1,9 +1,14 @@
 //! # bls-signatures-evm
 //!
-//! This library includes the implementation of BLS signatures
-//! over the elliptic curve BLS12-381.
+//! This library includes the implementation of BLS signatures over the
+//! elliptic curve BLS12-381. It uses keccak256 as a hashing function, to
+//! have maximum optimization for verifications on EVMs. Plus, it offers
+//! an EVM-specific serialization, compatible with the BLS12-381 precompiles.
 //!
-//! Ref: https://www.iacr.org/archive/asiacrypt2001/22480516.pdf
+//! For a BLS signature verification in Solidity compatible with this implementation,
+//! check out this library: <https://github.com/xevisalle/solidity-ecc>
+//!
+//! Ref: <https://www.iacr.org/archive/asiacrypt2001/22480516.pdf>
 
 #![deny(missing_docs)]
 #[doc = include_str!("../README.md")]
