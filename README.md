@@ -1,5 +1,8 @@
 # BLS signatures in Rust
 
+[![Crates.io](https://img.shields.io/crates/v/bls-signatures-evm.svg)](https://crates.io/crates/bls-signatures-evm)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/xevisalle/bls-signatures-evm)
+
 This repository includes the implementation of BLS signatures in Rust, using the BLS12-381 elliptic curve. It uses keccak256 as a hashing function, to have maximum optimization for verifications on EVMs. Plus, it offers an EVM-specific serialization, compatible with the BLS12-381 precompiles. 
 
 For a BLS signature verification in Solidity compatible with this implementation, check out [this library](https://github.com/xevisalle/solidity-ecc).
